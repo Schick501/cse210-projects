@@ -3,48 +3,68 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-class Program
+namespace JournalApp
 {
-    static void Main(string[] args)
+    class Program
     {
-        List<Entry> journal = new List<Entry>();
-        PromptGenerator promptGenerator = new PromptGenerator();
-        string filePath = "journal.json";
-
-        if (File.Exists(filePath))
+        static void Main(string[] args)
         {
-            string json = File.ReadAllText(filePath);
-            journal = JsonSerializer.Deserialize<List<Entry>>(json);
-        }
+            List<Entry> journal = new List<Entry>();
+            PromptGenerator promptGenerator = new PromptGenerator();
+            string filePath = "journal.json";
 
-        while (true)
-        {
-            Console.WriteLine("1. Write a new entry");
-            Console.WriteLine("2. View journal");
-            Console.WriteLine("3. Save and exit");
-            Console.Write("Choose an option: ");
-            string choice = Console.ReadLine();
-
-            if (choice == "1")
+            if (File.Exists(filePath))
             {
-                string prompt = promptGenerator.GetRandomPrompt();
-                Console.WriteLine(prompt);
-                string response = Console.ReadLine();
-                journal.Add(new Entry(DateTime.Now, prompt, response));
+                string json = File.ReadAllText(filePath);
+                journal = JsonSerializer.Deserialize<List<Entry>>(json);
             }
-            else if (choice == "2")
+
+            while (true)
             {
-                foreach (var entry in journal)
+                Console.WriteLine("1. Add Entry");
+                Console.WriteLine("2. View Entries");
+                Console.WriteLine("3. Save and Exit");
+                Console.Write("Choose an option: ");
+                string choice = Console.ReadLine();
+
+                if (choice == "1")
                 {
-                    Console.WriteLine(entry);
+                    Entry newEntry = new Entry
+                    {
+                        Date = DateTime.Now,
+                        Content = promptGenerator.GeneratePrompt()
+                    };
+                    journal.Add(newEntry);
+                }
+                else if (choice == "2")
+                {
+                    foreach (var entry in journal)
+                    {
+                        Console.WriteLine($"{entry.Date}: {entry.Content}");
+                    }
+                }
+                else if (choice == "3")
+                {
+                    string json = JsonSerializer.Serialize(journal);
+                    File.WriteAllText(filePath, json);
+                    break;
                 }
             }
-            else if (choice == "3")
-            {
-                string json = JsonSerializer.Serialize(journal);
-                File.WriteAllText(filePath, json);
-                break;
-            }
+        }
+    }
+
+    public class Entry
+    {
+        public DateTime Date { get; set; }
+        public string Content { get; set; }
+    }
+
+    public class PromptGenerator
+    {
+        public string GeneratePrompt()
+        {
+            // Implement your prompt generation logic here
+            return "Sample prompt content";
         }
     }
 }
